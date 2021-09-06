@@ -49,7 +49,8 @@ fn create_identity(maybe_pem: Option<PathBuf>) -> impl Identity {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let opts: Opts = Opts::parse();
 
     let my_identity = create_identity(opts.pem.clone());
@@ -82,5 +83,4 @@ fn main() {
     let future = command::call_update_method(&agent, &opts, &copts);
     let result  = block_on(future);
     command::show_result(result, &copts);
-
 }
