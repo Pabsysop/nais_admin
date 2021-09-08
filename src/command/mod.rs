@@ -26,14 +26,30 @@ use crate::Opts;
 
 const DEFAULT_IC_GATEWAY: &str = "https://ic0.app";
 
-#[derive(Clap)]
+#[derive(CandidType, Clone, Deserialize, Debug)]
+pub enum WasmType {
+    PABToken,
+    Board,
+    Life,
+    AvatarNFT,
+    VisaNFT
+}
+
+#[derive(CandidType, Deserialize)]
+pub struct StoreWASMArgs {
+    pub wasm_type: WasmType,
+    #[serde(with = "serde_bytes")]
+    pub wasm_module: Vec<u8>,
+}
+
+#[derive(Clap, Clone)]
 pub enum SubCommand {
     Update(CallOpts),
     Query(CallOpts),
 }
 
 /// A subcommand for call canister
-#[derive(Clap)]
+#[derive(Clap, Clone)]
 pub struct CallOpts {
     #[clap(parse(try_from_str), required = true)]
     pub canister_id: Principal,
@@ -51,7 +67,7 @@ pub struct CallOpts {
     pub method_name: String,
 
     /// The type of input (hex or IDL).
-    #[clap(long, default_value = "idl")]
+    #[clap(long, default_value = "raw")]
     pub arg: ArgType,
 
     /// The type of output (hex or IDL).
@@ -63,7 +79,8 @@ pub struct CallOpts {
     pub arg_value: Option<String>,
 }
 
-#[derive(Clap)]
+
+#[derive(Clap, Debug, Clone)]
 pub enum ArgType {
     Idl,
     Raw,
