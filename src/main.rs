@@ -4,7 +4,6 @@ use clap::{crate_authors, crate_version, Clap};
 use futures::executor::block_on;
 use ic_agent::{
     agent,
-    export::Principal,
     identity::BasicIdentity,
     Agent, Identity,
 };
@@ -12,9 +11,11 @@ use ic_utils::interfaces::management_canister::{
     builders::CanisterInstall,
 };
 use ring::signature::Ed25519KeyPair;
-use std::{fs::File, io::Read, path::PathBuf, str::FromStr};
+use std::{fs::File, io::Read, path::PathBuf};
+use candid::{Encode};
+use crate::command::{WasmType, StoreWASMArgs};
 
-#[derive(Clap)]
+#[derive(Clap, Clone)]
 #[clap(
 version = crate_version!(),
 author = crate_authors!()
@@ -49,7 +50,8 @@ fn create_identity(maybe_pem: Option<PathBuf>) -> impl Identity {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let opts: Opts = Opts::parse();
 
     let my_identity = create_identity(opts.pem.clone());
@@ -64,23 +66,55 @@ fn main() {
         .build()
         .expect("Failed to build the Agent");
 
-    let mut f = File::open("nft.wasm").expect("no wasm file");
-    let mut buffer = Vec::<u8>::new();
-    f.read_to_end(&mut buffer).expect("read file error");
-    let code = easy_hasher::easy_hasher::Hash::from_vec(&buffer).to_hex_string();
-
-    let copts = command::CallOpts{
-        canister_id: Principal::from_text("rrkah-fqaaa-aaaaa-aaaaq-cai").unwrap(),
-        serialize: false,
-        candid: Some(PathBuf::from_str("nais_canister.did").unwrap()),
-        method_name: "uploadWasm".to_string(),
-        arg: command::ArgType::Idl,
-        output: command::ArgType::Idl,
-        arg_value: Some(code),
-    };
-
-    let future = command::call_update_method(&agent, &opts, &copts);
-    let result  = block_on(future);
-    command::show_result(result, &copts);
+    match opts.clone().subcommand {
+        command::SubCommand::Update(copts) => {
+            let mut call_opts = copts.clone();
+            let arg_value: Vec<u8> = match &copts.method_name[..] {
+                "uploadNftWasm" => {
+                    let mut buffer = Vec::<u8>::new();
+                    let mut f = File::open("nft.wasm").expect("no wasm file");
+                    f.read_to_end(&mut buffer).expect("read file error");
+                    let wasmargs = StoreWASMArgs{ wasm_type: WasmType::VisaNFT, wasm_module: buffer};
+                    let arg_value = Encode!(&wasmargs).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("uploadWasm");
+                    arg_value
+                }
+                "uploadTokenWasm" => {
+                    let mut buffer = Vec::<u8>::new();
+                    let mut f = File::open("token.wasm").expect("no wasm file");
+                    f.read_to_end(&mut buffer).expect("read file error");
+                    let wasmargs = StoreWASMArgs{ wasm_type: WasmType::PABToken, wasm_module: buffer};
+                    let arg_value = Encode!(&wasmargs).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("uploadWasm");
+                    arg_value
+                }
+                "uploadAndersonWasm" => {
+                    let mut buffer = Vec::<u8>::new();
+                    let mut f = File::open("anderson.wasm").expect("no wasm file");
+                    f.read_to_end(&mut buffer).expect("read file error");
+                    let wasmargs = StoreWASMArgs{ wasm_type: WasmType::Life, wasm_module: buffer};
+                    let arg_value = Encode!(&wasmargs).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("uploadWasm");
+                    arg_value
+                }
+                "DeployNFTContract" => {
+                    let t = WasmType::VisaNFT;
+                    let arg_value = Encode!(&t).unwrap_or(vec![]);
+                    arg_value
+                }
+                _ => { println!("update method not supported!"); return;}
+            };
+            let arg_value_str = easy_hasher::easy_hasher::Hash::from_vec(&arg_value).to_hex_string();
+            call_opts.arg_value = Some(arg_value_str.clone());
+            let future = command::call_update_method(&agent, &opts, &call_opts);
+            let result  = block_on(future);
+            command::show_result(result, &call_opts);
+        }
+        command::SubCommand::Query(copts) => {
+            match &copts.method_name[..] {
+                _ => println!("query method not supported!")
+            }
+        }
+    }
 
 }
