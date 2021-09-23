@@ -56,6 +56,7 @@ async fn main() {
 
     let my_identity = create_identity(opts.pem.clone());
     let my_principal =  my_identity.sender().expect("not valid identity");
+    println!("my identity is {}", my_principal);
 
     let agent = Agent::builder()
         .with_transport(
@@ -70,6 +71,15 @@ async fn main() {
         command::SubCommand::Update(copts) => {
             let mut call_opts = copts.clone();
             let arg_value: Vec<u8> = match &copts.method_name[..] {
+                "uploadAvatarWasm" => {
+                    let mut buffer = Vec::<u8>::new();
+                    let mut f = File::open("nft.wasm").expect("no wasm file");
+                    f.read_to_end(&mut buffer).expect("read file error");
+                    let wasmargs = StoreWASMArgs{ wasm_type: WasmType::AvatarNFT, wasm_module: buffer};
+                    let arg_value = Encode!(&wasmargs).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("uploadWasm");
+                    arg_value
+                }
                 "uploadNftWasm" => {
                     let mut buffer = Vec::<u8>::new();
                     let mut f = File::open("nft.wasm").expect("no wasm file");
@@ -97,8 +107,28 @@ async fn main() {
                     call_opts.method_name = String::from("uploadWasm");
                     arg_value
                 }
+                "uploadBoardWasm" => {
+                    let mut buffer = Vec::<u8>::new();
+                    let mut f = File::open("board.wasm").expect("no wasm file");
+                    f.read_to_end(&mut buffer).expect("read file error");
+                    let wasmargs = StoreWASMArgs{ wasm_type: WasmType::Board, wasm_module: buffer};
+                    let arg_value = Encode!(&wasmargs).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("uploadWasm");
+                    arg_value
+                }
                 "DeployNFTContract" => {
                     let t = WasmType::VisaNFT;
+                    let arg_value = Encode!(&t).unwrap_or(vec![]);
+                    arg_value
+                }
+                "DeployAvatarNFTContract" => {
+                    let t = WasmType::AvatarNFT;
+                    let arg_value = Encode!(&t).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("DeployNFTContract");
+                    arg_value
+                }
+                "DeployTokenContract" => {
+                    let t = ();
                     let arg_value = Encode!(&t).unwrap_or(vec![]);
                     arg_value
                 }
