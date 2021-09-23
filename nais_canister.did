@@ -17,7 +17,9 @@ service : () -> {
   ApplyCitizenship : (text) -> (opt principal);
   BuildCivilization : () -> (opt principal);
   DeployNFTContract : (WasmType) -> (text);
+  DeployTokenContract : () -> (text);
   GenesisCode : () -> (text) query;
+  Hi : () -> (text) query;
   Initialize : () -> (Result);
   IssuePAB : (IssueTokenArgs) -> (Result_1);
   PauseBoard : (principal) -> ();
