@@ -12,8 +12,8 @@ use ic_utils::interfaces::management_canister::{
 };
 use ring::signature::Ed25519KeyPair;
 use std::{fs::File, io::Read, path::PathBuf};
-use candid::{Encode};
-use crate::command::{WasmType, StoreWASMArgs};
+use candid::{Encode, Principal};
+use crate::command::{StoreWASMArgs, WasmType};
 
 #[derive(Clap, Clone)]
 #[clap(
@@ -130,6 +130,18 @@ async fn main() {
                 "DeployTokenContract" => {
                     let t = ();
                     let arg_value = Encode!(&t).unwrap_or(vec![]);
+                    arg_value
+                }
+                "UpgradeAndersonContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::Life).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
+                    arg_value
+                }
+                "UpgradeBoardContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::Board).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
                     arg_value
                 }
                 _ => { println!("update method not supported!"); return;}
