@@ -42,6 +42,12 @@ pub struct StoreWASMArgs {
     pub wasm_module: Vec<u8>,
 }
 
+#[derive(CandidType, Deserialize)]
+pub struct UpgradeArgs {
+    pub canister: Principal,
+    pub wasm_type: WasmType,
+}
+
 #[derive(Clap, Clone)]
 pub enum SubCommand {
     Update(CallOpts),
@@ -65,6 +71,9 @@ pub struct CallOpts {
 
     #[clap(required = true)]
     pub method_name: String,
+
+    #[clap(long, parse(try_from_str))]
+    pub up_canister: Option<Principal>,
 
     /// The type of input (hex or IDL).
     #[clap(long, default_value = "raw")]
