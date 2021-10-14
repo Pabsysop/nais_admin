@@ -58,9 +58,12 @@ async fn main() {
     let my_principal =  my_identity.sender().expect("not valid identity");
     println!("my identity is {}", my_principal);
 
+    // let endpoit_url = String::from("https://ic0.app/");
+    let endpoit_url = opts.replica.clone();
+
     let agent = Agent::builder()
         .with_transport(
-            agent::http_transport::ReqwestHttpReplicaV2Transport::create(opts.replica.clone())
+            agent::http_transport::ReqwestHttpReplicaV2Transport::create(endpoit_url)
                 .expect("Failed to create Transport for Agent"),
         )
         .with_boxed_identity(Box::new(my_identity))
