@@ -1,6 +1,6 @@
 pub mod command;
 
-use clap::{crate_authors, crate_version, Clap};
+use clap::{crate_version, Clap};
 use futures::executor::block_on;
 use ic_agent::{
     agent,
@@ -17,8 +17,7 @@ use crate::command::{StoreWASMArgs, WasmType};
 
 #[derive(Clap, Clone)]
 #[clap(
-version = crate_version!(),
-author = crate_authors!()
+version = crate_version!()
 )]
 pub struct Opts {
     #[clap(default_value = "http://localhost:8000/")]

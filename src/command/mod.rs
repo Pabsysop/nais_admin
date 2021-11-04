@@ -24,7 +24,7 @@ use serde::Deserialize;
 use crate::CanisterInstall;
 use crate::Opts;
 
-const DEFAULT_IC_GATEWAY: &str = "https://ic0.app";
+const DEFAULT_IC_GATEWAY: &str = "https://ic0.app/";
 
 #[derive(CandidType, Clone, Deserialize, Debug)]
 pub enum WasmType {
@@ -457,7 +457,7 @@ pub async fn call_update_method(agent: &AgentImpl<NonceFactory>, opts: &Opts, t:
                     eprint!(".");
                     Ok(())
                 })
-                .timeout(std::time::Duration::from_secs(60 * 5))
+                .timeout(std::time::Duration::from_secs(60 * 10))
                 .build(),
         )
         .await;
