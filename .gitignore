@@ -1,3 +1,5 @@
 /target
 identity.pem
 client.pem
+nais_admin
+nais_canister.did
