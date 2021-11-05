@@ -146,6 +146,24 @@ async fn main() {
                     call_opts.method_name = String::from("UpgradeCanister");
                     arg_value
                 }
+                "UpgradeTokenContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::PABToken).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
+                    arg_value
+                }
+                "UpgradeNFTContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::VisaNFT).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
+                    arg_value
+                }
+                "UpgradeAvatarNFTContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::AvatarNFT).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
+                    arg_value
+                }
                 _ => { println!("update method not supported!"); return;}
             };
             let arg_value_str = easy_hasher::easy_hasher::Hash::from_vec(&arg_value).to_hex_string();
