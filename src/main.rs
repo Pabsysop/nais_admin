@@ -1,6 +1,6 @@
 pub mod command;
 
-use clap::{crate_authors, crate_version, Clap};
+use clap::{crate_version, Clap};
 use futures::executor::block_on;
 use ic_agent::{
     agent,
@@ -17,8 +17,7 @@ use crate::command::{StoreWASMArgs, WasmType};
 
 #[derive(Clap, Clone)]
 #[clap(
-version = crate_version!(),
-author = crate_authors!()
+version = crate_version!()
 )]
 pub struct Opts {
     #[clap(default_value = "http://localhost:8000/")]
@@ -58,9 +57,12 @@ async fn main() {
     let my_principal =  my_identity.sender().expect("not valid identity");
     println!("my identity is {}", my_principal);
 
+    // let endpoit_url = String::from("https://ic0.app/");
+    let endpoit_url = opts.replica.clone();
+
     let agent = Agent::builder()
         .with_transport(
-            agent::http_transport::ReqwestHttpReplicaV2Transport::create(opts.replica.clone())
+            agent::http_transport::ReqwestHttpReplicaV2Transport::create(endpoit_url)
                 .expect("Failed to create Transport for Agent"),
         )
         .with_boxed_identity(Box::new(my_identity))
@@ -141,6 +143,24 @@ async fn main() {
                 "UpgradeBoardContract" => {
                     let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
                     let arg_value = Encode!(&upcan, &WasmType::Board).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
+                    arg_value
+                }
+                "UpgradeTokenContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::PABToken).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
+                    arg_value
+                }
+                "UpgradeNFTContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::VisaNFT).unwrap_or(vec![]);
+                    call_opts.method_name = String::from("UpgradeCanister");
+                    arg_value
+                }
+                "UpgradeAvatarNFTContract" => {
+                    let upcan = call_opts.up_canister.unwrap_or(Principal::anonymous());
+                    let arg_value = Encode!(&upcan, &WasmType::AvatarNFT).unwrap_or(vec![]);
                     call_opts.method_name = String::from("UpgradeCanister");
                     arg_value
                 }
